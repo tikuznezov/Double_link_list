@@ -12,7 +12,7 @@
 #include     <ctype.h>
 #include    <stdarg.h>
 
-#define _PRT
+// #define _DEBUG
 #include "log.cpp"
 #include "term_colors.h"
 
@@ -36,7 +36,7 @@ struct List
     size_t tail;
     size_t size;
     size_t free;
-    size_t el_count;
+    // size_t el_count;
 };
 
 // Functions
@@ -44,54 +44,81 @@ struct List
 
 int PrintDLList(const List * const list)
 {
+    assert(list);
+    assert(list->data);
+
+    printf("\nList:\n");
+    printf("/------------------------------------------\\\n");
+    printf("| Index | Array i | Prev | Variable | Next |\n");
+    size_t repeat_count = 0;
+    size_t i = list->head;
+    for (size_t list_index = 0; i < list->size; list_index++)
+    {
+        printf("|------------------------------------------|\n");
+        printf("| %5zu | [%5zu] | %4zd | " PR_LIST_EL " | %4zd |\n", list_index, i, list->data[i].prev, list->data[i].var, list->data[i].next);
+        i = list->data[i].next;
+        repeat_count++;
+        if ((repeat_count >= list->size) || (i == 0))
+        {
+            printf("|------------------------------------------|\n");
+            printf("|     --> Break printing on " PYELLOW "%3zu" DEF_COL " index.     |\n", i);
+            printf("|         List length = <" PYELLOW "%6zu" DEF_COL ">           |\n", repeat_count);
+            break;
+        }
+    }
+    printf("\\-------|----------------------------------/\n");
+
+    printf(DEF_COL);
+    return 0;
+}
+
+int PrintListLikeArray(const List * const list)
+{
+    assert(list);
+    assert(list->data);
+
+    printf("\nList like arrays:\n");
+    printf("/--------------------------------\\\n");
+    printf("| Index | Prev | Variable | Next |\n");
+    for (size_t i = 0; i < list->size; i++)
+    {
+        printf("|--------------------------------|\n");
+        printf("| %5zu | %4zd | " PR_LIST_EL " | %4zd |\n", i, list->data[i].prev, list->data[i].var, list->data[i].next);
+    }
+    printf("\\--------------------------------/\n");
+
     return 0;
 }
 
 #define VerifyList(List_p) VerifyListDef(List_p, __FUNCTION__);
 int VerifyListDef(const List * const list, const char *func_name)
 {
-    assert(list);
-    assert(func_name);
     PR_FST;
+    assert(func_name);
 
-    PR("Called by \"" PYELLOW "%s" DEF_COL "\".\n\n", func_name);
-
-    PR("List data:\n");
-    PR("Head = %zu;  \nTail = %zu;  \nFree = %zd;  \nSize = %zu;  \n", list->head, list->tail, list->free, list->size);
-
-    PR("\nList like arrays:\n");
-    PR("/--------------------------------\\\n");
-    PR("| Index | Prev | Variable | Next |\n");
-    for (size_t i = 0; i < list->size; i++)
+    if (list == NULL)
     {
-        PR("|--------------------------------|\n");
-        PR("| %5zu | %4zd | " PR_LIST_EL " | %4zd |\n", i, list->data[i].prev, list->data[i].var, list->data[i].next);
+        printf("--> List doesn't exist! (&list == NULL)!\n");
+        return 1; // FIXME err code
     }
-    PR("\\--------------------------------/\n");
 
-
-    PR("\nList in correct order:\n");
-    PR("/----------------------------------------\\\n");
-    PR("| Index [arr_i] | Prev | Variable | Next |\n");
-    size_t repeat_count = 0;
-    size_t i = list->head;
-    for (size_t list_index = 0; i < list->size; list_index++)
+    if (list->data == NULL)
     {
-        PR("|----------------------------------------|\n");
-        PR("| %5zu [%5zu] | %4zd | " PR_LIST_EL " | %4zd |\n", list_index, i, list->data[i].prev, list->data[i].var, list->data[i].next);
-        i = list->data[i].next;
-        repeat_count++;
-        if ((repeat_count >= list->size) || (i == 0))
-        {
-            PR("|----------------------------------------|\n");
-            PR("|    --> Break printing on " PYELLOW "%3zu" DEF_COL " index.    |\n", i);
-            PR("|        List length = <" PYELLOW "%6zu" DEF_COL ">          |\n", repeat_count);
-            break;
-        }
+        printf("* List was deleted. (data is NULL pointer)\n");
+        return 0;
     }
-    PR("\\----------------------------------------/\n");
 
-    PR(DEF_COL);
+    #ifdef _DEBUG
+        printf("Called by \"" PYELLOW "%s" DEF_COL "\".\n\n", func_name);
+
+        printf("List data:\n");
+        printf("Head = %zu;  \nTail = %zu;  \nFree = %zd;  \nSize = %zu;  \n", list->head, list->tail, list->free, list->size);
+
+        PrintDLList(list);
+        PrintListLikeArray(list);
+    #endif
+
+
     PR_FED;
     return 0;
 }
@@ -99,6 +126,10 @@ int VerifyListDef(const List * const list, const char *func_name)
 // COMP
 size_t FindFreeCell(const List * const list)
 {
+    VerifyList(list);
+    assert(list);
+    assert(list->data);
+
     size_t free_index = -1;
 
     for (size_t i = 1; i < list->size; i++)
@@ -124,34 +155,42 @@ enum List_errors {
 
 size_t ListFinderByIndex(const List * const list, size_t index)
 {
-        size_t index_finder  = list->head;
-        size_t index_in_list = 0;
-        size_t repeat_count = 0;
-        while ((index_in_list != index) && (repeat_count++ < list->size))
+    VerifyList(list);
+    assert(list);
+    assert(list->data);
+
+    size_t index_finder  = list->head;
+    size_t index_in_list = 0;
+    size_t repeat_count = 0;
+    while ((index_in_list != index) && (repeat_count++ < list->size))
+    {
+        if (list->data[index_finder].next != -1)
         {
-            if (list->data[index_finder].next != -1)
-            {
-                index_finder = list->data[index_finder].next;
-                index_in_list++;
-            }
-            else
-            {
-                PR("--> Index is not in list!\n");
-                return -1; // FIXME err code
-            }
+            index_finder = list->data[index_finder].next;
+            index_in_list++;
         }
-        if (repeat_count >= list->size)
+        else
         {
-            PR("--> List loop!\n");
-            return 1; // FIXME err code
+            PR("--> Index is not in list!\n");
+            return -1; // FIXME err code
         }
-        PR(PYELLOW "Found index array[%zu] == list[%zu].\n" DEF_COL, index_finder, index_in_list);
-        return index_finder;
+    }
+    if (repeat_count >= list->size)
+    {
+        PR("--> List loop!\n");
+        return 1; // FIXME err code
+    }
+    PR(PYELLOW "Found index array[%zu] == list[%zu].\n" DEF_COL, index_finder, index_in_list);
+    return index_finder;
 }
 
 // COMP
 int ListAdd(List * const list, const list_element_t arg, const size_t index)
 {
+    VerifyList(list);
+    assert(list);
+    assert(list->data);
+
     // find free cell
     list->free = FREE_ELEMENT_NOT_FOUND;
     list->free = FindFreeCell(list);
@@ -246,6 +285,10 @@ int ListAdd(List * const list, const list_element_t arg, const size_t index)
 // TODO
 int ListDel(List * const list, size_t del_index_in_list)
 {
+    VerifyList(list);
+    assert(list);
+    assert(list->data);
+
     if ((del_index_in_list >= 0) && (del_index_in_list < list->size))
     {
         // find element to add
@@ -254,7 +297,7 @@ int ListDel(List * const list, size_t del_index_in_list)
 
         if ((list->data[del_index].next == -1) || (list->data[del_index].next == -1))
         {
-            printf(PRED "--> Try to delete free element.\n");
+            printf(PRED "--> Try to delete void element.\n" DEF_COL);
             return -1; // FIXME err code
         }
         // Delete list element
@@ -303,7 +346,7 @@ int InitList(List *list)
     list->head = 0;
     list->tail = 0;
     list->free = 0;
-    list->el_count = 0;
+    // list->el_count = 0;
 
     list->data[0] = {.prev = 0, .var = POISON, .next = 0};
     for (size_t i = 1; i < list->size; i++)
@@ -319,6 +362,23 @@ int InitList(List *list)
     return 0;
 }
 
+int ListDestructor(List *list)
+{
+    PR_FST;
+    VerifyList(list);
+    assert(list);
+    assert(list->data);
+
+    PR("* Freeing list data array...\n");
+    free(list->data);
+    PR("* List->data successfully freed.\n");
+
+    // *list = {.data = NULL, .el_count = 0, .free = 0, .head = 0, .size = 0, .tail = 0};
+    *list = {};
+
+    PR_FED;
+    return 0;
+}
 
 // MAIN
 //-------------------------------------------------------------------------------------------
@@ -329,7 +389,7 @@ int main(void)
     InitList(&list);
 
     for (int i = 0; i <= 6; i++)
-        ListAdd(&list, 100 + i, 0);
+        ListAdd(&list, 100 + i, i);
 
     // ListAdd(&list, 99, 0);
     // ListAdd(&list, 105, 1);
@@ -338,9 +398,20 @@ int main(void)
 
     ListDel(&list, 2);
     ListDel(&list, 0);
+    ListDel(&list, 2);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    PrintDLList(&list);
 
     // ListAdd(&list, 1000, 5);
 
+    VerifyList(&list);
+    ListDestructor(&list);
+    printf("After delete list:\n");
     VerifyList(&list);
     return 0;
 }

@@ -27,16 +27,16 @@ void ClearTerm(void);
 // PRINTING
 //---------------------------------------------------------------------------------------------------------------------
 
-#ifdef _PRT
+#ifdef _DEBUG
     #define PAUSE ClearTerm();
     #define PR(name, ...)                                                                               \
         printf(name, ## __VA_ARGS__)
     #define PR_FST                                                                                      \
         printf("----------------------------------------------------------------------------------\n"); \
-        printf("- RUN %s:\n\n", __FUNCTION__);
+        printf("- RUN %s:\n\n", __FUNCTION__)
     #define PR_FED                                                                                      \
         printf("\n- END %s;\n", __FUNCTION__); ClearTerm();                                             \
-        printf("----------------------------------------------------------------------------------\n");
+        printf("----------------------------------------------------------------------------------\n")
 #else
     #define PAUSE
     #define PR(name, ...)
