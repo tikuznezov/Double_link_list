@@ -39,10 +39,68 @@ struct List
     // size_t el_count;
 };
 
+enum List_errors {
+    FREE_ELEMENT_NOT_FOUND = -1
+};
+
 // Functions
 //-------------------------------------------------------------------------------------------
 
-int PrintDLList(const List * const list)
+int     VerifyListDef           (const List * const list, const char *func_name);
+int     PrintDLList             (const List * const list);
+int     PrintListLikeArray      (const List * const list);
+int     InitList                (List * const list);
+int     ListAdd                 (List * const list, const list_element_t arg, const size_t index);
+int     ListDel                 (List * const list, size_t del_index_in_list);
+int     ListDestructor          (List *list);
+size_t  FindFreeCell            (const List * const list);
+size_t  ListFinderByIndex       (const List * const list, size_t index);
+
+
+#define VerifyList(List_p) VerifyListDef(List_p, __FUNCTION__);
+
+// MAIN
+//-------------------------------------------------------------------------------------------
+
+int main(void)
+{
+    List list = {};
+    InitList(&list);
+
+    for (int i = 0; i <= 6; i++)
+        ListAdd(&list, 100 + i, i);
+
+    // ListAdd(&list, 99, 0);
+    // ListAdd(&list, 105, 1);
+    // ListAdd(&list, 125, list.tail);
+    // ListAdd(&list, 67, 0);
+
+    ListDel(&list, 2);
+    ListDel(&list, 0);
+    ListDel(&list, 2);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    ListDel(&list, 0);
+    PrintDLList(&list);
+
+    // ListAdd(&list, 1000, 5);
+
+    VerifyList(&list);
+    ListDestructor(&list);
+    printf("After delete list:\n");
+    VerifyList(&list);
+    return 0;
+}
+
+
+// Functions
+//-------------------------------------------------------------------------------------------
+
+
+int PrintDLList             (const List * const list)
 {
     assert(list);
     assert(list->data);
@@ -72,7 +130,8 @@ int PrintDLList(const List * const list)
     return 0;
 }
 
-int PrintListLikeArray(const List * const list)
+
+int PrintListLikeArray      (const List * const list)
 {
     assert(list);
     assert(list->data);
@@ -90,8 +149,8 @@ int PrintListLikeArray(const List * const list)
     return 0;
 }
 
-#define VerifyList(List_p) VerifyListDef(List_p, __FUNCTION__);
-int VerifyListDef(const List * const list, const char *func_name)
+
+int VerifyListDef           (const List * const list, const char *func_name)
 {
     PR_FST;
     assert(func_name);
@@ -123,8 +182,8 @@ int VerifyListDef(const List * const list, const char *func_name)
     return 0;
 }
 
-// COMP
-size_t FindFreeCell(const List * const list)
+
+size_t FindFreeCell         (const List * const list)
 {
     VerifyList(list);
     assert(list);
@@ -149,11 +208,8 @@ size_t FindFreeCell(const List * const list)
     return free_index;
 }
 
-enum List_errors {
-    FREE_ELEMENT_NOT_FOUND = -1
-};
 
-size_t ListFinderByIndex(const List * const list, size_t index)
+size_t ListFinderByIndex    (const List * const list, size_t index)
 {
     VerifyList(list);
     assert(list);
@@ -184,8 +240,8 @@ size_t ListFinderByIndex(const List * const list, size_t index)
     return index_finder;
 }
 
-// COMP
-int ListAdd(List * const list, const list_element_t arg, const size_t index)
+
+int ListAdd                 (List * const list, const list_element_t arg, const size_t index)
 {
     VerifyList(list);
     assert(list);
@@ -282,8 +338,8 @@ int ListAdd(List * const list, const list_element_t arg, const size_t index)
     return 0;
 }
 
-// TODO
-int ListDel(List * const list, size_t del_index_in_list)
+
+int ListDel                 (List * const list, size_t del_index_in_list)
 {
     VerifyList(list);
     assert(list);
@@ -330,8 +386,8 @@ int ListDel(List * const list, size_t del_index_in_list)
     return 0;
 }
 
-// COMP
-int InitList(List *list)
+
+int InitList                (List * const list)
 {
     PR_FST;
 
@@ -362,7 +418,8 @@ int InitList(List *list)
     return 0;
 }
 
-int ListDestructor(List *list)
+
+int ListDestructor          (List *list)
 {
     PR_FST;
     VerifyList(list);
@@ -379,40 +436,3 @@ int ListDestructor(List *list)
     PR_FED;
     return 0;
 }
-
-// MAIN
-//-------------------------------------------------------------------------------------------
-
-int main(void)
-{
-    List list = {};
-    InitList(&list);
-
-    for (int i = 0; i <= 6; i++)
-        ListAdd(&list, 100 + i, i);
-
-    // ListAdd(&list, 99, 0);
-    // ListAdd(&list, 105, 1);
-    // ListAdd(&list, 125, list.tail);
-    // ListAdd(&list, 67, 0);
-
-    ListDel(&list, 2);
-    ListDel(&list, 0);
-    ListDel(&list, 2);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-    PrintDLList(&list);
-
-    // ListAdd(&list, 1000, 5);
-
-    VerifyList(&list);
-    ListDestructor(&list);
-    printf("After delete list:\n");
-    VerifyList(&list);
-    return 0;
-}
-
