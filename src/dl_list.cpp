@@ -12,7 +12,7 @@
 #include     <ctype.h>
 #include    <stdarg.h>
 
-#define _DEBUG
+// #define _DEBUG
 #include "log.cpp"
 #include "term_colors.h"
 
@@ -46,21 +46,72 @@ enum List_errors {
 // Functions
 //-------------------------------------------------------------------------------------------
 
+// Sys functions
+int     InitList                (List * const list, size_t size);
+int     ListDestructor          (List * list);
 int     VerifyListDef           (const List * const list, const char *func_name);
 int     PrintDLList             (const List * const list);
 int     PrintListLikeArray      (const List * const list);
-int     InitList                (List * const list, size_t size);
+// Change elements
 int     ListAddAfter            (List * const list, const list_element_t arg, const size_t index);
 int     ListAddBefore           (List * const list, const list_element_t arg, const size_t index);
 int     ListAddHead             (List * const list, const list_element_t arg, const size_t index);
 int     ListAddTail             (List * const list, const list_element_t arg, const size_t index);
 int     ListDel                 (List * const list, size_t del_index_in_list);
-int     ListDestructor          (List *list);
 size_t  FindFreeCell            (const List * const list);
 size_t  ListFinderByIndex       (const List * const list, size_t index);
 
 
 #define VerifyList(List_p) VerifyListDef(List_p, __FUNCTION__);
+
+// GraphViz
+//-------------------------------------------------------------------------------------------
+
+FILE *gv = NULL;
+
+#define fp fprintf
+int PrintDLListGV (const List * const list)
+{
+    VerifyList(list);
+    #ifndef _GV
+        #define _GV
+        extern FILE *gv;
+        gv = fopen("DL_list.gv", "w");
+    #endif
+
+    // graph info
+    fp(gv, "digraph G {\n");
+    fp(gv, "node [shape = box, shape = Mrecord];\n");
+
+    // elements
+    size_t repeat_count = 0;
+    size_t i = list->head;
+    for (size_t list_index = 0; i < list->size; list_index++)
+    {
+        // n1 [label="{List element 1.| .prev = 0 | .arg = 51 | .next = 2}"];
+        fp(gv, "\t%zu [label = \"{List element %zu | [%zu] | %zd | " PR_LIST_EL " | %zd}\"];\n", list_index, list_index, i, list->data[i].prev, list->data[i].var, list->data[i].next);
+        i = list->data[i].next;
+        repeat_count++;
+        if ((repeat_count >= list->size) || (i == 0))
+        {
+            break;
+        }
+    }
+
+    fp(gv, "}");
+
+    return 0;
+}
+
+void CompPng(void)
+{
+    #ifdef _GV
+        extern FILE *gv;
+        fclose(gv);
+        gv = NULL;
+        system("dot -Tpng DL_list.gv -o DL_list.png");
+    #endif
+}
 
 // MAIN
 //-------------------------------------------------------------------------------------------
@@ -70,13 +121,16 @@ int main(void)
     List list = {};
     InitList(&list, 10);
 
-    for (int i = 0; i <= 10; i++)
+    for (int i = 0; i <= 5; i++)
         ListAddAfter(&list, 100 + i, i);
 
     // ListAddAfter(&list, 99, 0);
     // ListAddAfter(&list, 105, 1);
     // ListAddAfter(&list, 125, list.tail);
     // ListAddAfter(&list, 67, 0);
+    PrintDLListGV(&list);
+
+    ListAddBefore(&list, 52, 0);
 
     PrintListLikeArray(&list);
 
@@ -101,6 +155,7 @@ int main(void)
     ListDestructor(&list);
     printf("After delete list:\n");
     VerifyList(&list);
+    CompPng();
     return 0;
 }
 
@@ -271,7 +326,7 @@ int ListAddAfter            (List * const list, const list_element_t arg, const 
     // list->free = FindFreeCell(list);
     if (list->free == FREE_ELEMENT_NOT_FOUND)
     {
-        printf("--> Could not find free index!\n");
+        printf("--> Could not find free index! (index = %zu)\n", index);
         return -1; // FIXME err_code
     }
 
@@ -300,6 +355,7 @@ int ListAddAfter            (List * const list, const list_element_t arg, const 
         index_finder = ListFinderByIndex(list, index);
         if (index_finder == -1)
         {
+            printf("--> Element wasn't found.\n");
             return -1;
         }
 
@@ -453,6 +509,9 @@ int InitList                (List * const list, size_t size)
 {
     PR_FST;
 
+    // Add space to NULL element
+    size++;
+
     list->data = (List_element *) calloc(size, sizeof(List_element));
     if (list->data == NULL)
     {
@@ -502,6 +561,7 @@ int ListDestructor          (List *list)
 
     // *list = {.data = NULL, .el_count = 0, .free = 0, .head = 0, .size = 0, .tail = 0};
     *list = {};
+    list = NULL;
 
     PR_FED;
     return 0;

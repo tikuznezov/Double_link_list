@@ -1,0 +1,9 @@
+digraph G {
+node [shape = box, shape = Mrecord];
+	0 [label = "{List element 0 | [1] | 0 |      100 | 2}"];
+	1 [label = "{List element 1 | [2] | 1 |      101 | 3}"];
+	2 [label = "{List element 2 | [3] | 2 |      102 | 4}"];
+	3 [label = "{List element 3 | [4] | 3 |      103 | 5}"];
+	4 [label = "{List element 4 | [5] | 4 |      104 | 6}"];
+	5 [label = "{List element 5 | [6] | 5 |      105 | 0}"];
+}
