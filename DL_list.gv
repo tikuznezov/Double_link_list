@@ -1,9 +1,33 @@
-digraph G {
-node [shape = box, shape = Mrecord];
-	0 [label = "{List element 0 | [1] | 0 |      100 | 2}"];
-	1 [label = "{List element 1 | [2] | 1 |      101 | 3}"];
-	2 [label = "{List element 2 | [3] | 2 |      102 | 4}"];
-	3 [label = "{List element 3 | [4] | 3 |      103 | 5}"];
-	4 [label = "{List element 4 | [5] | 4 |      104 | 6}"];
-	5 [label = "{List element 5 | [6] | 5 |      105 | 0}"];
+
+
+digraph 230 {
+node [shape = box, shape = Mrecord]; bgcolor = white; rankdir=LR;
+	0  [label = "                                          List element 0  |                                         array index [0] |                                         previous = 0    |                                         argument =        0 |                                 next = 0"];
+	head [label = "head", style=filled, color = orange];
+	head -> 0
+	tail [label = "tail", style=filled, color = orange];
+	tail -> 0
+	0  [label = "                                          List element 1  |                                             array index [0] |                                             previous = 0    |                                             argument =        0 |                                     next = 0"                                                    style = filled, fillcolor = "#7dff97"    color = "#3fb950"    fontcolor = "#000000"];
+	0 -> 0 [label = "next", color = red];
+	0 -> 0 [label = "prev", color = blue];
+	6  [label = "                                          Free element 0  |                                             array index [6] |                                             previous = 0    |                                             argument =      105 |                                     next = 2",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	6 -> 2 [label = "next free", color = darkgreen];
+	2  [label = "                                          Free element 1  |                                             array index [2] |                                             previous = 0    |                                             argument =       52 |                                     next = 5",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	2 -> 5 [label = "next free", color = darkgreen];
+	5  [label = "                                          Free element 2  |                                             array index [5] |                                             previous = 0    |                                             argument =      104 |                                     next = 3",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	5 -> 3 [label = "next free", color = darkgreen];
+	3  [label = "                                          Free element 3  |                                             array index [3] |                                             previous = 0    |                                             argument =      102 |                                     next = 1",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	3 -> 1 [label = "next free", color = darkgreen];
+	1  [label = "                                          Free element 4  |                                             array index [1] |                                             previous = 0    |                                             argument =      100 |                                     next = 4",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	1 -> 4 [label = "next free", color = darkgreen];
+	4  [label = "                                          Free element 5  |                                             array index [4] |                                             previous = 3    |                                             argument =      103 |                                     next = 7",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	4 -> 7 [label = "next free", color = darkgreen];
+	7  [label = "                                          Free element 6  |                                             array index [7] |                                             previous = 0    |                                             argument =       52 |                                     next = 8",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	7 -> 8 [label = "next free", color = darkgreen];
+	8  [label = "                                          Free element 7  |                                             array index [8] |                                             previous = 0    |                                             argument =        0 |                                     next = 9",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	8 -> 9 [label = "next free", color = darkgreen];
+	9  [label = "                                          Free element 8  |                                             array index [9] |                                             previous = 0    |                                             argument =        0 |                                     next = 10",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	9 -> 10 [label = "next free", color = darkgreen];
+	10  [label = "                                          Free element 9  |                                             array index [10] |                                             previous = 0    |                                             argument =        0 |                                     next = -1",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
+	10 -> -1 [label = "next free", color = darkgreen];
 }

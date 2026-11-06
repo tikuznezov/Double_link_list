@@ -64,15 +64,19 @@ size_t  ListFinderByIndex       (const List * const list, size_t index);
 
 #define VerifyList(List_p) VerifyListDef(List_p, __FUNCTION__);
 
+
 // GraphViz
 //-------------------------------------------------------------------------------------------
 
 FILE *gv = NULL;
 
 #define fp fprintf
-int PrintDLListGV (const List * const list)
+
+#define PrintDLListGV(list_p) PrintDLListGV_DEF(list_p, __LINE__)
+
+int PrintDLListGV_DEF(const List * const list, const int name)
 {
-    VerifyList(list);
+VerifyList(list);
     #ifndef _GV
         #define _GV
         extern FILE *gv;
@@ -80,22 +84,92 @@ int PrintDLListGV (const List * const list)
     #endif
 
     // graph info
-    fp(gv, "digraph G {\n");
-    fp(gv, "node [shape = box, shape = Mrecord];\n");
-
-    // elements
-    size_t repeat_count = 0;
-    size_t i = list->head;
-    for (size_t list_index = 0; i < list->size; list_index++)
+    fp(gv, "\n\ndigraph %d {\n", name);
+    fp(gv, "node [shape = box, shape = Mrecord]; bgcolor = white; rankdir=LR;\n");
+    // print zero
     {
-        // n1 [label="{List element 1.| .prev = 0 | .arg = 51 | .next = 2}"];
-        fp(gv, "\t%zu [label = \"{List element %zu | [%zu] | %zd | " PR_LIST_EL " | %zd}\"];\n", list_index, list_index, i, list->data[i].prev, list->data[i].var, list->data[i].next);
-        i = list->data[i].next;
-        repeat_count++;
-        if ((repeat_count >= list->size) || (i == 0))
+        fp(gv, "\t%zu  [label = \"                              \
+            List element %zu  |                             \
+            array index [%zu] |                             \
+            previous = %zu    |                             \
+            argument = " PR_LIST_EL " |                     \
+            next = %zd\"];\n",                              \
+            NULL,                                           \
+            NULL,                                           \
+            NULL,                                           \
+            list->data[0].prev,                             \
+            list->data[0].var,                              \
+            list->data[0].next  );
+    }
+    // print head
+    fp(gv, "\thead [label = \"head\", style=filled, color = orange];\n");
+    fp(gv, "\thead -> %zu\n", list->head);
+    // print tail
+    fp(gv, "\ttail [label = \"tail\", style=filled, color = orange];\n");
+    fp(gv, "\ttail -> %zu\n", list->tail);
+
+    // list elements
+    size_t array_index = list->head;
+    for (size_t list_index = 1; array_index < list->size; list_index++)
+    {
+        // fp(gv, "{rank=same; %zu; %zu;}\n", array_index, list->data[array_index].next);
+        // print node
         {
-            break;
+            fp(gv, "\t%zu  [label = \"                          \
+                List element %zu  |                             \
+                array index [%zu] |                             \
+                previous = %zu    |                             \
+                argument = " PR_LIST_EL " |                     \
+                next = %zd\"                                    \
+                style = filled, fillcolor = \"#7dff97\"    color = \"#3fb950\"    fontcolor = \"#000000\"];\n",               \
+                array_index,                                    \
+                list_index,                                     \
+                array_index,                                    \
+                list->data[array_index].prev,                   \
+                list->data[array_index].var,                    \
+                list->data[array_index].next  );
         }
+        // link to next
+        fp(gv, "\t%zu -> %zu [label = \"next\", color = red];\n", array_index, list->data[array_index].next);
+        // link to prev
+        fp(gv, "\t%zu -> %zu [label = \"prev\", color = blue];\n", array_index, list->data[array_index].prev);
+
+
+        // go to next index
+        array_index = list->data[array_index].next;
+
+        // check array borders and link to zero
+        if ((list_index > list->size) || (array_index == 0))
+            break;
+    }
+
+    // free elements
+    size_t free_i = list->free;
+    for (size_t list_index = 0; free_i < list->size; list_index++)
+    {
+        // print free node
+        {
+            fp(gv, "\t%zd  [label = \"                          \
+                Free element %zu  |                             \
+                array index [%zu] |                             \
+                previous = %zu    |                             \
+                argument = " PR_LIST_EL " |                     \
+                next = %zd\",                                   \
+                style = filled, fillcolor = \"#84a7f8\"    color = \"#5d5da4\"    fontcolor = \"#000000\"];\n",               \
+                free_i,                                         \
+                list_index,                                     \
+                free_i,                                         \
+                list->data[free_i].prev,                        \
+                list->data[free_i].var,                         \
+                list->data[free_i].next  );
+        }
+        // link to next
+        fp(gv, "\t%zd -> %zd [label = \"next free\", color = darkgreen];\n", free_i, list->data[free_i].next);
+
+        // go to next free index
+        free_i = list->data[free_i].next;
+        if((free_i == -1) || (free_i == 0))
+            break;
     }
 
     fp(gv, "}");
@@ -103,13 +177,17 @@ int PrintDLListGV (const List * const list)
     return 0;
 }
 
-void CompPng(void)
+const int SYS_COMMAND_LENGTH = 100;
+void CompPng(const char *name)
 {
     #ifdef _GV
+        #undef _GV
         extern FILE *gv;
         fclose(gv);
         gv = NULL;
-        system("dot -Tpng DL_list.gv -o DL_list.png");
+        char sys_com[SYS_COMMAND_LENGTH];
+        snprintf(sys_com, SYS_COMMAND_LENGTH, "dot -Tpng DL_list.gv -o %s.png", name);
+        system(sys_com);
     #endif
 }
 
@@ -128,9 +206,10 @@ int main(void)
     // ListAddAfter(&list, 105, 1);
     // ListAddAfter(&list, 125, list.tail);
     // ListAddAfter(&list, 67, 0);
-    PrintDLListGV(&list);
 
-    ListAddBefore(&list, 52, 0);
+    ListAddBefore(&list, 52, 1);
+    PrintDLListGV(&list);
+    CompPng("porno1");
 
     PrintListLikeArray(&list);
 
@@ -147,6 +226,9 @@ int main(void)
     ListDel(&list, 0);
     ListDel(&list, 0);
     ListDel(&list, 0);
+
+    PrintDLListGV(&list);
+    CompPng("porno2");
     PrintDLList(&list);
 
     // ListAddAfter(&list, 1000, 5);
@@ -155,7 +237,6 @@ int main(void)
     ListDestructor(&list);
     printf("After delete list:\n");
     VerifyList(&list);
-    CompPng();
     return 0;
 }
 
@@ -185,7 +266,7 @@ int PrintDLList             (const List * const list)
         if ((repeat_count >= list->size) || (i == 0))
         {
             printf("|------------------------------------------|\n");
-            printf("|     --> Break printing on " PYELLOW "%3zu" DEF_COL " index.     |\n", i);
+            printf("|     --> Break printing on " PYELLOW "%3zd" DEF_COL " index.     |\n", i);
             printf("|         List length = <" PYELLOW "%6zu" DEF_COL ">           |\n", repeat_count);
             break;
         }
@@ -456,11 +537,10 @@ int ListDel                 (List * const list, size_t del_index_in_list)
 
     if ((del_index_in_list >= 0) && (del_index_in_list < list->size))
     {
-        // find element to add
         size_t del_index = -1;
         del_index = ListFinderByIndex(list, del_index_in_list);
 
-        if ((list->data[del_index].next == -1) || (list->data[del_index].next == -1))
+        if ((list->data[del_index].prev == -1) || (del_index == 0))
         {
             printf(PRED "--> Try to delete void element.\n" DEF_COL);
             return -1; // FIXME err code
@@ -480,9 +560,6 @@ int ListDel                 (List * const list, size_t del_index_in_list)
             if (list->tail == del_index)
                 list->tail = list->data[del_index].prev;
 
-            // list->data[del_index].next = -1;
-            // list->data[del_index].prev = -1;
-            // list->data[del_index].var  = POISON;
 
             list->data[del_index].next = list->free;
             list->free = del_index;
