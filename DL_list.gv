@@ -1,33 +1,29 @@
 
 
-digraph 230 {
-node [shape = box, shape = Mrecord]; bgcolor = white; rankdir=LR;
-	0  [label = "                                          List element 0  |                                         array index [0] |                                         previous = 0    |                                         argument =        0 |                                 next = 0"];
-	head [label = "head", style=filled, color = orange];
-	head -> 0
-	tail [label = "tail", style=filled, color = orange];
-	tail -> 0
-	0  [label = "                                          List element 1  |                                             array index [0] |                                             previous = 0    |                                             argument =        0 |                                     next = 0"                                                    style = filled, fillcolor = "#7dff97"    color = "#3fb950"    fontcolor = "#000000"];
-	0 -> 0 [label = "next", color = red];
-	0 -> 0 [label = "prev", color = blue];
-	6  [label = "                                          Free element 0  |                                             array index [6] |                                             previous = 0    |                                             argument =      105 |                                     next = 2",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	6 -> 2 [label = "next free", color = darkgreen];
-	2  [label = "                                          Free element 1  |                                             array index [2] |                                             previous = 0    |                                             argument =       52 |                                     next = 5",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	2 -> 5 [label = "next free", color = darkgreen];
-	5  [label = "                                          Free element 2  |                                             array index [5] |                                             previous = 0    |                                             argument =      104 |                                     next = 3",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	5 -> 3 [label = "next free", color = darkgreen];
-	3  [label = "                                          Free element 3  |                                             array index [3] |                                             previous = 0    |                                             argument =      102 |                                     next = 1",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	3 -> 1 [label = "next free", color = darkgreen];
-	1  [label = "                                          Free element 4  |                                             array index [1] |                                             previous = 0    |                                             argument =      100 |                                     next = 4",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	1 -> 4 [label = "next free", color = darkgreen];
-	4  [label = "                                          Free element 5  |                                             array index [4] |                                             previous = 3    |                                             argument =      103 |                                     next = 7",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	4 -> 7 [label = "next free", color = darkgreen];
-	7  [label = "                                          Free element 6  |                                             array index [7] |                                             previous = 0    |                                             argument =       52 |                                     next = 8",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	7 -> 8 [label = "next free", color = darkgreen];
-	8  [label = "                                          Free element 7  |                                             array index [8] |                                             previous = 0    |                                             argument =        0 |                                     next = 9",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	8 -> 9 [label = "next free", color = darkgreen];
-	9  [label = "                                          Free element 8  |                                             array index [9] |                                             previous = 0    |                                             argument =        0 |                                     next = 10",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	9 -> 10 [label = "next free", color = darkgreen];
-	10  [label = "                                          Free element 9  |                                             array index [10] |                                             previous = 0    |                                             argument =        0 |                                     next = -1",                                                   style = filled, fillcolor = "#84a7f8"    color = "#5d5da4"    fontcolor = "#000000"];
-	10 -> -1 [label = "next free", color = darkgreen];
+digraph 287 {
+rankdir=LR; splines=ortho; nodesep = 1; bgcolor="#FFFFFF";node [shape = Mrecord, style = filled, fillcolor = "#626ae0", fontcolor = "#ffffff", fontname="Helvetica-Bold"];n0     [label="Array index     0.| .arg = 67676767 |{ .prev =     0 | .next =     0}"];
+n1     [label="Array index     1.| .arg = 67676767 |{ .prev =    -1 | .next =    -1}"];
+n2     [label="Array index     2.| .arg = 67676767 |{ .prev =    -1 | .next =     5}"];
+n3     [label="Array index     3.| .arg = 67676767 |{ .prev =    -1 | .next =     6}"];
+n4     [label="Array index     4.| .arg = 67676767 |{ .prev =    -1 | .next =     2}"];
+n5     [label="Array index     5.| .arg = 67676767 |{ .prev =    -1 | .next =     1}"];
+n6     [label="Array index     6.| .arg = 67676767 |{ .prev =    -1 | .next =     4}"];
+n7     [label="Array index     7.| .arg = 67676767 |{ .prev =    -1 | .next =     3}"];
+n8     [label="Array index     8.| .arg = 67676767 |{ .prev =    -1 | .next =     7}"];
+n9     [label="Array index     9.| .arg =      108 |{ .prev =     0 | .next =    10}"];
+n10    [label="Array index    10.| .arg =      109 |{ .prev =     9 | .next =     0}"];
+n0 -> n1 [style=invis, weight=100];
+n1 -> n2 [style=invis, weight=100];
+n2 -> n3 [style=invis, weight=100];
+n3 -> n4 [style=invis, weight=100];
+n4 -> n5 [style=invis, weight=100];
+n5 -> n6 [style=invis, weight=100];
+n6 -> n7 [style=invis, weight=100];
+n7 -> n8 [style=invis, weight=100];
+n8 -> n9 [style=invis, weight=100];
+n9 -> n10 [style=invis, weight=100];
+n9 -> n10 [constraint=false, dir=both];n0 -> n0 [constraint=false, dir=both];head [label = "HEAD", fillcolor = orange];
+tail [label = "TAIL", fillcolor = orange];
+head:e -> n9:n;
+tail:e -> n10:n;
 }

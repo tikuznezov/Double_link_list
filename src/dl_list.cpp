@@ -12,11 +12,9 @@
 #include     <ctype.h>
 #include    <stdarg.h>
 
-// #define _DEBUG
+#define _DEBUG
 #include "log.cpp"
 #include "term_colors.h"
-
-const size_t LIST_LENGTH = 10;
 
 typedef int list_element_t;
 #define PR_LIST_EL "%8d"
@@ -43,6 +41,8 @@ enum List_errors {
     FREE_ELEMENT_NOT_FOUND = -1
 };
 
+
+// FIXME zero links to head and tail
 // Functions
 //-------------------------------------------------------------------------------------------
 
@@ -70,13 +70,13 @@ size_t  ListFinderByIndex       (const List * const list, size_t index);
 
 FILE *gv = NULL;
 
-#define fp fprintf
+#define fp(string, ...)  fprintf(gv, string, ## __VA_ARGS__);
 
 #define PrintDLListGV(list_p) PrintDLListGV_DEF(list_p, __LINE__)
 
 int PrintDLListGV_DEF(const List * const list, const int name)
 {
-VerifyList(list);
+    VerifyList(list);
     #ifndef _GV
         #define _GV
         extern FILE *gv;
@@ -84,11 +84,68 @@ VerifyList(list);
     #endif
 
     // graph info
-    fp(gv, "\n\ndigraph %d {\n", name);
-    fp(gv, "node [shape = box, shape = Mrecord]; bgcolor = white; rankdir=LR;\n");
+    fp("\n\ndigraph %d {\n", name);
+    fp("rankdir=LR; splines=ortho; nodesep = 1; bgcolor=\"#FFFFFF\";");
+    fp("node [shape = Mrecord, style = filled, fillcolor = \"#626ae0\", fontcolor = \"#ffffff\", fontname=\"Helvetica-Bold\"];");
+
+    // create blocks
+    for (size_t i = 0; i < list->size; i++)
+    {
+        fp("n%-5zu [label=\"Array index %5zu.| .arg = " PR_LIST_EL " |{ .prev = %5zd | .next = %5zd}\"];\n", i, i, list->data[i].var, list->data[i].prev, list->data[i].next);
+    }
+    // set to line
+    for (size_t i = 1; i < list->size; i++)
+    {
+        fp("n%zu -> n%zu [style=invis, weight=100];\n", i-1, i);
+    }
+
+    // create links
+    for (size_t list_index = list->head; list_index < list->size; list_index = list->data[list_index].next)
+    {
+        size_t next = list->data[list_index].next;
+        size_t prev = list->data[list_index].prev;
+
+        if (list_index == list->data[next].prev)
+        {
+            fp("n%zu -> n%zu [constraint=false, dir=both];", list_index, next);
+        }
+        if ((list_index == 0) || (list_index == -1))
+        {
+            break;
+        }
+    }
+
+
+    // create head and tail
+    fp("head [label = \"HEAD\", fillcolor = orange];\n");
+    fp("tail [label = \"TAIL\", fillcolor = orange];\n");
+
+    fp("head:e -> n%zd:n;\n", list->head);
+    fp("tail:e -> n%zd:n;\n", list->tail);
+    fp("}");
+
+    return 0;
+/*
+    rank = same; head; n1;
+    rank = same; tail; n4;
+*/
+}
+
+int PrintDLListGV_DEF_V1(const List * const list, const int name)
+{
+            VerifyList(list);
+            #ifndef _GV
+                #define _GV
+                extern FILE *gv;
+                gv = fopen("DL_list.gv", "w");
+            #endif
+
+            // graph info
+            fp("\n\ndigraph %d {\n", name);
+            fp("node [shape = box, shape = Mrecord]; bgcolor = white; rankdir=LR;\n");
     // print zero
     {
-        fp(gv, "\t%zu  [label = \"                              \
+        fp("\t%zu  [label = \"                          \
             List element %zu  |                             \
             array index [%zu] |                             \
             previous = %zu    |                             \
@@ -102,37 +159,38 @@ VerifyList(list);
             list->data[0].next  );
     }
     // print head
-    fp(gv, "\thead [label = \"head\", style=filled, color = orange];\n");
-    fp(gv, "\thead -> %zu\n", list->head);
+    fp("\thead [label = \"head\", style=filled, color = orange];\n");
+    fp("\thead -> %zu\n", list->head);
     // print tail
-    fp(gv, "\ttail [label = \"tail\", style=filled, color = orange];\n");
-    fp(gv, "\ttail -> %zu\n", list->tail);
+    fp("\ttail [label = \"tail\", style=filled, color = orange];\n");
+    fp("\ttail -> %zu\n", list->tail);
 
     // list elements
     size_t array_index = list->head;
     for (size_t list_index = 1; array_index < list->size; list_index++)
     {
-        // fp(gv, "{rank=same; %zu; %zu;}\n", array_index, list->data[array_index].next);
+        // fp("{rank=same; %zu; %zu;}\n", array_index, list->data[array_index].next);
         // print node
         {
-            fp(gv, "\t%zu  [label = \"                          \
+            fp("\t%zu  [label = \"                          \
                 List element %zu  |                             \
                 array index [%zu] |                             \
                 previous = %zu    |                             \
                 argument = " PR_LIST_EL " |                     \
                 next = %zd\"                                    \
-                style = filled, fillcolor = \"#7dff97\"    color = \"#3fb950\"    fontcolor = \"#000000\"];\n",               \
+                style = filled, fillcolor = \"#7dff97\", color = \"#3fb950\", fontcolor = \"#000000\", rank = same; 0; %zu];\n",               \
                 array_index,                                    \
                 list_index,                                     \
                 array_index,                                    \
                 list->data[array_index].prev,                   \
                 list->data[array_index].var,                    \
-                list->data[array_index].next  );
+                list->data[array_index].next,                   \
+                array_index);
         }
         // link to next
-        fp(gv, "\t%zu -> %zu [label = \"next\", color = red];\n", array_index, list->data[array_index].next);
+        fp("\t%zu -> %zu [label = \"next\", color = red];\n", array_index, list->data[array_index].next);
         // link to prev
-        fp(gv, "\t%zu -> %zu [label = \"prev\", color = blue];\n", array_index, list->data[array_index].prev);
+        fp("\t%zu -> %zu [label = \"prev\", color = blue];\n", array_index, list->data[array_index].prev);
 
 
         // go to next index
@@ -149,7 +207,7 @@ VerifyList(list);
     {
         // print free node
         {
-            fp(gv, "\t%zd  [label = \"                          \
+            fp("\t%zd  [label = \"                          \
                 Free element %zu  |                             \
                 array index [%zu] |                             \
                 previous = %zu    |                             \
@@ -164,7 +222,7 @@ VerifyList(list);
                 list->data[free_i].next  );
         }
         // link to next
-        fp(gv, "\t%zd -> %zd [label = \"next free\", color = darkgreen];\n", free_i, list->data[free_i].next);
+        fp("\t%zd -> %zd [label = \"next free\", color = darkgreen];\n", free_i, list->data[free_i].next);
 
         // go to next free index
         free_i = list->data[free_i].next;
@@ -172,7 +230,7 @@ VerifyList(list);
             break;
     }
 
-    fp(gv, "}");
+    fp("}");
 
     return 0;
 }
@@ -199,7 +257,7 @@ int main(void)
     List list = {};
     InitList(&list, 10);
 
-    for (int i = 0; i <= 5; i++)
+    for (int i = 0; i <= 15; i++)
         ListAddAfter(&list, 100 + i, i);
 
     // ListAddAfter(&list, 99, 0);
@@ -208,11 +266,10 @@ int main(void)
     // ListAddAfter(&list, 67, 0);
 
     ListAddBefore(&list, 52, 1);
+
     PrintDLListGV(&list);
-    CompPng("porno1");
-
+    CompPng("pic1");
     PrintListLikeArray(&list);
-
     PrintDLList(&list);
 
     ListDel(&list, 2);
@@ -228,14 +285,16 @@ int main(void)
     ListDel(&list, 0);
 
     PrintDLListGV(&list);
-    CompPng("porno2");
+    CompPng("pic2");
+    PrintListLikeArray(&list);
     PrintDLList(&list);
+
 
     // ListAddAfter(&list, 1000, 5);
 
     VerifyList(&list);
     ListDestructor(&list);
-    printf("After delete list:\n");
+    // printf("After delete list:\n");
     VerifyList(&list);
     return 0;
 }
@@ -247,10 +306,14 @@ int main(void)
 // TODO next free index like next index
 // TODO add before this element
 
-int PrintDLList             (const List * const list)
+int PrintDLList             (/* FILE * stream, */const List * const list)
 {
     assert(list);
     assert(list->data);
+
+    // TODO
+    // fprintf(stream, ".....");
+    // stderr
 
     printf("\nList:\n");
     printf("/------------------------------------------\\\n");
@@ -396,6 +459,7 @@ size_t ListFinderByIndex    (const List * const list, size_t index)
 }
 
 
+// TODO индекс должен указывать на ячейку массива, а не логический индекс в списке
 int ListAddAfter            (List * const list, const list_element_t arg, const size_t index)
 {
     VerifyList(list);
@@ -411,8 +475,7 @@ int ListAddAfter            (List * const list, const list_element_t arg, const 
         return -1; // FIXME err_code
     }
 
-
-// add to tail or head
+    // add to tail or head
     if ((index == 0) || (index == list->tail))
     {
         size_t free_i = list->free;
@@ -436,7 +499,7 @@ int ListAddAfter            (List * const list, const list_element_t arg, const 
         index_finder = ListFinderByIndex(list, index);
         if (index_finder == -1)
         {
-            printf("--> Element wasn't found.\n");
+            // printf("--> Element wasn't found.\n");
             return -1;
         }
 
@@ -471,6 +534,7 @@ int ListAddAfter            (List * const list, const list_element_t arg, const 
 
 int ListAddHead             (List * const list, const list_element_t arg, const size_t index)
 {
+    VerifyList(list);
     size_t next_free_index = list->data[list->free].next;
 
     PR("\n* Write new head element.\n");
@@ -492,12 +556,13 @@ int ListAddHead             (List * const list, const list_element_t arg, const 
 
     list->free = next_free_index;
 
-    VerifyList(list);
+    // VerifyList(list);
     return 0;
 }
 
 int ListAddTail             (List * const list, const list_element_t arg, const size_t index)
 {
+    VerifyList(list);
     size_t next_free_index = list->data[list->free].next;
 
     PR("\n* Write new tail element.\n");
@@ -519,7 +584,7 @@ int ListAddTail             (List * const list, const list_element_t arg, const 
     list->tail = list->free;
     list->free = next_free_index;
 
-    VerifyList(list);
+    // VerifyList(list);
     return 0;
 }
 
@@ -552,7 +617,8 @@ int ListDel                 (List * const list, size_t del_index_in_list)
             size_t next = list->data[del_index].next;
 
             // link prev to next
-            list->data[prev].next = next;
+            if ((list->data[prev].next != 0) && (list->data[next].prev != 0))
+                list->data[prev].next = next;
             list->data[next].prev = prev;
 
             if (list->head == del_index)
@@ -561,12 +627,16 @@ int ListDel                 (List * const list, size_t del_index_in_list)
                 list->tail = list->data[del_index].prev;
 
 
-            list->data[del_index].next = list->free;
-            list->free = del_index;
+            if (list->data[del_index].next != 0)
+            {
+                list->data[del_index].next = list->free;
+                list->free = del_index;
+            }
+
 
             #ifdef _DEBUG
-                // list->data[del_index].prev = -1;
-                // list->data[del_index].var  = POISON;
+                list->data[del_index].prev = -1;
+                list->data[del_index].var  = POISON;
             #endif
 
             VerifyList(list);
@@ -643,3 +713,31 @@ int ListDestructor          (List *list)
     PR_FED;
     return 0;
 }
+
+int DomainExpansion         (List * list)
+{
+    VerifyList(list);
+    assert(list);
+    assert(list->data);
+
+    size_t exp_coef = 2;
+
+    List_element *new_address = (List_element *) realloc(list->data, list->size * exp_coef * sizeof(List_element));
+    if (new_address == NULL)
+    {
+        perror("Domain expansion unsuccessful.");
+        return -1; // FIXME
+    }
+    list->data = new_address;
+
+    for (size_t i = list->size; i < list->size*exp_coef-1; i++)
+    {
+        list->data[i].next = i+1;
+    }
+    list->data[list->size*exp_coef-1].next = list->free;
+    list->free = list->data[list->size].next;
+    list->size *= exp_coef;
+    
+    return 0;
+}
+
