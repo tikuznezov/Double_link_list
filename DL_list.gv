@@ -1,17 +1,17 @@
 
 
-digraph 287 {
-rankdir=LR; splines=ortho; nodesep = 1; bgcolor="#FFFFFF";node [shape = Mrecord, style = filled, fillcolor = "#626ae0", fontcolor = "#ffffff", fontname="Helvetica-Bold"];n0     [label="Array index     0.| .arg = 67676767 |{ .prev =     0 | .next =     0}"];
-n1     [label="Array index     1.| .arg = 67676767 |{ .prev =    -1 | .next =    -1}"];
+digraph 317 {
+rankdir=LR; splines=ortho; nodesep = 1; bgcolor="#FFFFFF";node [shape = Mrecord, style = filled, fillcolor = "#626ae0", fontcolor = "#ffffff", fontname="Helvetica-Bold"];n0     [label="Array index     0.| .arg = 67676767 |{ .prev =     1 | .next =     4}"];
+n1     [label="Array index     1.| .arg =       80 |{ .prev =     4 | .next =     0}"];
 n2     [label="Array index     2.| .arg = 67676767 |{ .prev =    -1 | .next =     5}"];
-n3     [label="Array index     3.| .arg = 67676767 |{ .prev =    -1 | .next =     6}"];
-n4     [label="Array index     4.| .arg = 67676767 |{ .prev =    -1 | .next =     2}"];
-n5     [label="Array index     5.| .arg = 67676767 |{ .prev =    -1 | .next =     1}"];
-n6     [label="Array index     6.| .arg = 67676767 |{ .prev =    -1 | .next =     4}"];
-n7     [label="Array index     7.| .arg = 67676767 |{ .prev =    -1 | .next =     3}"];
-n8     [label="Array index     8.| .arg = 67676767 |{ .prev =    -1 | .next =     7}"];
-n9     [label="Array index     9.| .arg =      108 |{ .prev =     0 | .next =    10}"];
-n10    [label="Array index    10.| .arg =      109 |{ .prev =     9 | .next =     0}"];
+n3     [label="Array index     3.| .arg = 67676767 |{ .prev =    -1 | .next =     2}"];
+n4     [label="Array index     4.| .arg =       30 |{ .prev =     0 | .next =     1}"];
+n5     [label="Array index     5.| .arg =        0 |{ .prev =     0 | .next =     6}"];
+n6     [label="Array index     6.| .arg =        0 |{ .prev =     0 | .next =     7}"];
+n7     [label="Array index     7.| .arg =        0 |{ .prev =     0 | .next =     8}"];
+n8     [label="Array index     8.| .arg =        0 |{ .prev =     0 | .next =     9}"];
+n9     [label="Array index     9.| .arg =        0 |{ .prev =     0 | .next =    10}"];
+n10    [label="Array index    10.| .arg =        0 |{ .prev =     0 | .next =    -1}"];
 n0 -> n1 [style=invis, weight=100];
 n1 -> n2 [style=invis, weight=100];
 n2 -> n3 [style=invis, weight=100];
@@ -22,8 +22,10 @@ n6 -> n7 [style=invis, weight=100];
 n7 -> n8 [style=invis, weight=100];
 n8 -> n9 [style=invis, weight=100];
 n9 -> n10 [style=invis, weight=100];
-n9 -> n10 [constraint=false, dir=both];n0 -> n0 [constraint=false, dir=both];head [label = "HEAD", fillcolor = orange];
+n4 -> n1 [constraint=false, dir=both];n1 -> n0 [constraint=false, dir=both];n0 -> n4 [constraint=false, dir=both];n3 -> n2 [constraint=false, color = "#3fc236", style = bold];n2 -> n5 [constraint=false, color = "#3fc236", style = bold];n5 -> n6 [constraint=false, color = "#3fc236", style = bold];n6 -> n7 [constraint=false, color = "#3fc236", style = bold];n7 -> n8 [constraint=false, color = "#3fc236", style = bold];n8 -> n9 [constraint=false, color = "#3fc236", style = bold];n9 -> n10 [constraint=false, color = "#3fc236", style = bold];n10 -> n18446744073709551615 [constraint=false, color = "#3fc236", style = bold];free [label = "FREE", fillcolor = "#00a527"];
+free:e -> n3:n;
+head [label = "HEAD", fillcolor = orange];
 tail [label = "TAIL", fillcolor = orange];
-head:e -> n9:n;
-tail:e -> n10:n;
+head:e -> n4:n;
+tail:e -> n1:n;
 }

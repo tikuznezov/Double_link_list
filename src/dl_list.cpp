@@ -53,10 +53,10 @@ int     VerifyListDef           (const List * const list, const char *func_name)
 int     PrintDLList             (const List * const list);
 int     PrintListLikeArray      (const List * const list);
 // Change elements
-int     ListAddAfter            (List * const list, const list_element_t arg, const size_t index);
-int     ListAddBefore           (List * const list, const list_element_t arg, const size_t index);
-int     ListAddHead             (List * const list, const list_element_t arg, const size_t index);
-int     ListAddTail             (List * const list, const list_element_t arg, const size_t index);
+int     ListAddAfter            (List * const list, const list_element_t argument, const size_t index_in_array);
+int     ListAddBefore           (List * const list, const list_element_t argument, const size_t index_in_array);
+int     ListAddHead             (List * const list, const list_element_t argument);
+int     ListAddTail             (List * const list, const list_element_t argument);
 int     ListDel                 (List * const list, size_t del_index_in_list);
 size_t  FindFreeCell            (const List * const list);
 size_t  ListFinderByIndex       (const List * const list, size_t index);
@@ -99,20 +99,66 @@ int PrintDLListGV_DEF(const List * const list, const int name)
         fp("n%zu -> n%zu [style=invis, weight=100];\n", i-1, i);
     }
 
-    // create links
+    // create data links
+    size_t iter_count = 0;
     for (size_t list_index = list->head; list_index < list->size; list_index = list->data[list_index].next)
     {
         size_t next = list->data[list_index].next;
         size_t prev = list->data[list_index].prev;
 
+        // correct link
         if (list_index == list->data[next].prev)
         {
             fp("n%zu -> n%zu [constraint=false, dir=both];", list_index, next);
         }
+        // link to next error
+        else if (list_index != list->data[next].prev)
+        {
+            fp("n%zu -> n%zu [constraint=false, color = red];\n", list_index, next);
+        }
+        // link to prev error
+        else if (list_index != list->data[prev].next)
+        {
+            fp("n%zu -> n%zu [constraint=false, color = red];\n", prev, list_index);
+        }
+        // end of links
         if ((list_index == 0) || (list_index == -1))
         {
             break;
         }
+        // loop
+        if (++iter_count > list->size)
+        {
+            printf("--> List loop!\n"); // FIXME err code
+            break;
+        }
+    }
+
+    // create free links
+    if (list->free != ((size_t)-1))
+    {
+        iter_count = 0;
+        for (size_t list_index = list->free; list_index < list->size; list_index = list->data[list_index].next)
+        {
+            size_t next = list->data[list_index].next;
+
+
+            fp("n%zu -> n%zu [constraint=false, color = \"#3fc236\", style = bold];", list_index, next);
+
+            // end of links
+            if ((list_index == 0) || (list_index == -1))
+            {
+                break;
+            }
+            // loop
+            if (++iter_count > list->size)
+            {
+                printf("--> List loop!\n"); // FIXME err code
+                break;
+            }
+        }
+        fp("free [label = \"FREE\", fillcolor = \"#00a527\"];\n");
+        fp("free:e -> n%zd:n;\n", list->free);
     }
 
 
@@ -125,10 +171,6 @@ int PrintDLListGV_DEF(const List * const list, const int name)
     fp("}");
 
     return 0;
-/*
-    rank = same; head; n1;
-    rank = same; tail; n4;
-*/
 }
 
 int PrintDLListGV_DEF_V1(const List * const list, const int name)
@@ -257,45 +299,50 @@ int main(void)
     List list = {};
     InitList(&list, 10);
 
-    for (int i = 0; i <= 15; i++)
-        ListAddAfter(&list, 100 + i, i);
-
-    // ListAddAfter(&list, 99, 0);
-    // ListAddAfter(&list, 105, 1);
-    // ListAddAfter(&list, 125, list.tail);
-    // ListAddAfter(&list, 67, 0);
-
-    ListAddBefore(&list, 52, 1);
-
+    ListAddTail(&list, 80);
+    ListAddTail(&list, 90);
     PrintDLListGV(&list);
     CompPng("pic1");
-    PrintListLikeArray(&list);
-    PrintDLList(&list);
 
-    ListDel(&list, 2);
-    ListAddAfter(&list, 52, 4);
-    ListAddAfter(&list, 67, 8);
-    ListDel(&list, 0);
-    ListDel(&list, 2);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-    ListDel(&list, 0);
-
+    ListAddHead(&list, 40);
+    ListAddHead(&list, 30);
     PrintDLListGV(&list);
     CompPng("pic2");
-    PrintListLikeArray(&list);
-    PrintDLList(&list);
+
+    ListDel(&list, list.tail);
+    PrintDLListGV(&list);
+    CompPng("pic3");
+
+    ListDel(&list, 3);
+    PrintDLListGV(&list);
+    CompPng("pic4");
+
+    // for (int i = 0; i <= 15; i++)
+    //     ListAddAfter(&list, 100 + i, i);
+
+    // ListAddBefore(&list, 52, 1);
+
+    // PrintDLListGV(&list);
+    // CompPng("pic1");
+    // PrintListLikeArray(&list);
+    // PrintDLList(&list);
+
+    // ListDel(&list, 2);
+    // ListAddAfter(&list, 52, 4);
+    // ListAddAfter(&list, 67, 8);
+
+    // PrintDLListGV(&list);
+    // CompPng("pic2");
+    // PrintListLikeArray(&list);
+    // PrintDLList(&list);
 
 
-    // ListAddAfter(&list, 1000, 5);
+    // // ListAddAfter(&list, 1000, 5);
 
-    VerifyList(&list);
-    ListDestructor(&list);
-    // printf("After delete list:\n");
-    VerifyList(&list);
+    // VerifyList(&list);
+    // ListDestructor(&list);
+    // // printf("After delete list:\n");
+    // VerifyList(&list);
     return 0;
 }
 
@@ -460,129 +507,109 @@ size_t ListFinderByIndex    (const List * const list, size_t index)
 
 
 // TODO индекс должен указывать на ячейку массива, а не логический индекс в списке
-int ListAddAfter            (List * const list, const list_element_t arg, const size_t index)
+int ListAddAfter            (List * const list, const list_element_t arg, const size_t paste_index)
 {
     VerifyList(list);
     assert(list);
     assert(list->data);
 
-    // find free cell
-    // list->free = FREE_ELEMENT_NOT_FOUND;
-    // list->free = FindFreeCell(list);
     if (list->free == FREE_ELEMENT_NOT_FOUND)
     {
-        printf("--> Could not find free index! (index = %zu)\n", index);
+        printf("--> Could not find free index! (index = %zu)\n", paste_index);
         return -1; // FIXME err_code
     }
 
-    // add to tail or head
-    if ((index == 0) || (index == list->tail))
-    {
-        size_t free_i = list->free;
-        size_t next_free = list->data[list->free].next;
-        if (index == 0)
-        {
-            ListAddHead(list, arg, index);
-        }
-        if (index == list->tail)
-        {
-            list->free = free_i;
-            list->data[list->free].next = next_free;
-            ListAddTail(list, arg, index);
-        }
-    }
 // add to the midle
-    else
-    {
-        // find element to add
-        size_t index_finder = -1;
-        index_finder = ListFinderByIndex(list, index);
-        if (index_finder == -1)
-        {
-            // printf("--> Element wasn't found.\n");
-            return -1;
-        }
+    PR("* Find paste after [%zu];\n", paste_index);
 
-        PR("* Find paste element [%zu];\n", index_finder);
+    // Write data to next of find element
 
-        size_t next_free_index = list->data[list->free].next;
+    // remember next free element
+    size_t next_free_index = list->data[list->free].next;
 
-        // Write data to next of find element
+    // remember next index in new element
+    list->data[list->free].next = list->data[paste_index].next;
 
-        // remember next index in new element
-        list->data[list->free].next = list->data[index_finder].next;
+    // prev of next element is new
+    list->data[list->data[paste_index].next].prev = list->free;
 
-        // prev of next element is new
-        list->data[list->data[index_finder].next].prev = list->free;
+    // next of paste element is new
+    list->data[paste_index].next = list->free;
 
-        // next of paste element is new
-        list->data[index_finder].next = list->free;
+    // prev index is new element
+    list->data[list->free].prev = paste_index;
 
-        // prev index is new element
-        list->data[list->free].prev = index_finder;
+    // write arg in new element
+    list->data[list->free].var = arg;
 
-        // write arg in new element
-        list->data[list->free].var = arg;
+    // new free index
+    list->free = next_free_index;
 
-        list->free = next_free_index; // FIXME
+    VerifyList(list);
 
-        VerifyList(list);
-    }
 
     return 0;
 }
 
-int ListAddHead             (List * const list, const list_element_t arg, const size_t index)
+int ListAddHead             (List * const list, const list_element_t arg)
 {
     VerifyList(list);
-    size_t next_free_index = list->data[list->free].next;
+    // new head index
+    size_t new_head = list->free;
+    // new free index
+    list->free = list->data[list->free].next;
 
     PR("\n* Write new head element.\n");
     PR("\tOld head = {.prev = %zx, .var = " PR_LIST_EL ", .next = %zx}\n", list->data[list->head].prev, list->data[list->head].var, list->data[list->head].next);
-    // get new element
+
     // new element links to 0, next
-    list->data[list->free] = {.prev = 0, .var = arg, .next = list->head};
-    PR("\tNew head = {.prev = %zx, .var = " PR_LIST_EL ", .next = %zx}\n", list->data[list->free].prev, list->data[list->free].var, list->data[list->free].next);
+    list->data[new_head] = {.prev = 0, .var = arg, .next = list->head};
+    PR("\tNew head = {.prev = %zx, .var = " PR_LIST_EL ", .next = %zx}\n", list->data[new_head].prev, list->data[new_head].var, list->data[new_head].next);
 
     // old head links to new
-    if (list->head != 0)
-    {
-        list->data[list->head].prev = list->free;
-    }
+    list->data[list->head].prev = new_head;
+    list->data[0].next          = new_head;
     PR("\tOld head = {.prev = %zx, .var = " PR_LIST_EL ", .next = %zx}\n", list->data[list->head].prev, list->data[list->head].var, list->data[list->head].next);
 
+    if (list->data[new_head].next == 0)
+    {
+        list->tail = new_head;
+    }
     // new head index
-    list->head = list->free;
+    list->head = new_head;
 
-    list->free = next_free_index;
-
-    // VerifyList(list);
+    VerifyList(list);
     return 0;
 }
 
-int ListAddTail             (List * const list, const list_element_t arg, const size_t index)
+int ListAddTail             (List * const list, const list_element_t arg)
 {
     VerifyList(list);
-    size_t next_free_index = list->data[list->free].next;
+
+    // new tail index
+    size_t new_tail = list->free;
+    // new free index
+    list->free = list->data[list->free].next;
 
     PR("\n* Write new tail element.\n");
     PR("\tOld tail = {.prev = %zx, .var = " PR_LIST_EL ", .next = %zx}\n", list->data[list->tail].prev, list->data[list->tail].var, list->data[list->tail].next);
 
     // get new element
     // new element links to prev, 0
-    list->data[list->free] = {.prev = list->tail, .var = arg, .next = 0};
-    PR("\tNew tail = {.prev = %zx, .var = " PR_LIST_EL ", .next = %zx}\n", list->data[list->free].prev, list->data[list->free].var, list->data[list->free].next);
+    list->data[new_tail] = {.prev = list->tail, .var = arg, .next = 0};
+    PR("\tNew tail = {.prev = %zx, .var = " PR_LIST_EL ", .next = %zx}\n", list->data[new_tail].prev, list->data[new_tail].var, list->data[new_tail].next);
 
-    // old links to new
-    if (list->tail != 0)
-    {
-        list->data[list->tail].next = list->free;
-    }
+    // old tail links to new
+    list->data[list->tail].next = new_tail;
+    list->data[0].prev          = new_tail;
     PR("\tOld tail = {.prev = %zx, .var = " PR_LIST_EL ", .next = %zx}\n", list->data[list->tail].prev, list->data[list->tail].var, list->data[list->tail].next);
 
+    if (list->data[new_tail].prev == 0)
+    {
+        list->head = new_tail;
+    }
     // new tail index
-    list->tail = list->free;
-    list->free = next_free_index;
+    list->tail = new_tail;
 
     // VerifyList(list);
     return 0;
@@ -593,18 +620,14 @@ int ListAddBefore           (List * const list, const list_element_t arg, const 
     return ListAddAfter(list, arg, index-1);
 }
 
-
-int ListDel                 (List * const list, size_t del_index_in_list)
+int ListDel                 (List * const list, size_t del_index)
 {
     VerifyList(list);
     assert(list);
     assert(list->data);
 
-    if ((del_index_in_list >= 0) && (del_index_in_list < list->size))
+    if ((del_index > 0) && (del_index < list->size))
     {
-        size_t del_index = -1;
-        del_index = ListFinderByIndex(list, del_index_in_list);
-
         if ((list->data[del_index].prev == -1) || (del_index == 0))
         {
             printf(PRED "--> Try to delete void element.\n" DEF_COL);
@@ -627,12 +650,8 @@ int ListDel                 (List * const list, size_t del_index_in_list)
                 list->tail = list->data[del_index].prev;
 
 
-            if (list->data[del_index].next != 0)
-            {
-                list->data[del_index].next = list->free;
-                list->free = del_index;
-            }
-
+            list->data[del_index].next = list->free;
+            list->free = del_index;
 
             #ifdef _DEBUG
                 list->data[del_index].prev = -1;
@@ -648,9 +667,9 @@ int ListDel                 (List * const list, size_t del_index_in_list)
         printf("--> Try to delete element out of list indexes!\n");
         return -1; // FIXME err code
     }
+    VerifyList(list);
     return 0;
 }
-
 
 int InitList                (List * const list, size_t size)
 {
@@ -693,7 +712,6 @@ int InitList                (List * const list, size_t size)
     PR_FED;
     return 0;
 }
-
 
 int ListDestructor          (List *list)
 {
@@ -740,4 +758,6 @@ int DomainExpansion         (List * list)
     
     return 0;
 }
+
+
 
