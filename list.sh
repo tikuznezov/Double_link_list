@@ -1,2 +1,2 @@
-g++ src/dl_list.cpp -o list
+g++ src/main.cpp -o list
 # chmod +x имя_файла.sh
